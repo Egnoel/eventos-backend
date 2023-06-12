@@ -13,9 +13,7 @@ const router = Router();
 router.route('/').get(protect, allUsers);
 router.route('/').post(registerUser);
 router.post('/login', authUser);
-router
-  .route('/favorites/:eventId')
-  .post(protect, addFavoriteEvent)
-  .delete(protect, removeFavoriteEvent);
+router.route('/favorites/:eventId').post(protect, addFavoriteEvent);
+router.route('/favorites/:eventId').delete(protect, removeFavoriteEvent);
 
 export default router;

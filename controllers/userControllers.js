@@ -82,13 +82,13 @@ export const authUser = asyncHandler(async (req, res) => {
 });
 
 export const addFavoriteEvent = asyncHandler(async (req, res) => {
-  const eventId = req.params.id;
-  const userId = req.user._id;
+  const { eventId } = req.params;
+  const { _id } = req.user;
 
   // Verificar se o evento já está nos favoritos do usuário
-  const user = await User.findById(userId);
+  const user = await User.findById(_id);
   if (user.favorites.includes(eventId)) {
-    res.status(400).send('Evento já está nos favoritos do usuário');
+    res.status(400).json('Evento já está nos favoritos do usuário');
     return;
   }
 
@@ -96,7 +96,7 @@ export const addFavoriteEvent = asyncHandler(async (req, res) => {
     // Verificar se o evento existe
     const event = await Event.findById(eventId);
     if (!event) {
-      res.status(404).send('Evento não encontrado');
+      res.status(404).json('Evento não encontrado');
       return;
     }
 
@@ -104,9 +104,9 @@ export const addFavoriteEvent = asyncHandler(async (req, res) => {
     user.favorites.push(eventId);
     await user.save();
 
-    res.status(200).send('Evento adicionado aos favoritos com sucesso');
+    res.status(200).json('Evento adicionado aos favoritos com sucesso');
   } catch (error) {
-    res.status(400).send('Erro ao adicionar evento aos favoritos');
+    res.status(400).json('Erro ao adicionar evento aos favoritos');
   }
 });
 
