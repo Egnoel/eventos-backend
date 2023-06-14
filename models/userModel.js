@@ -11,7 +11,7 @@ const userSchema = Mongoose.Schema(
       type: 'String',
       required: true,
       default:
-        'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+        'https://res.cloudinary.com/dameucg7x/image/upload/v1676284449/329938388_1121969545144233_555012502169889047_n_llqpjc.jpg',
     },
     favorites: [{ type: Mongoose.Schema.Types.ObjectId, ref: 'Event' }],
   },

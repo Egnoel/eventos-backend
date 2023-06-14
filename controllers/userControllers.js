@@ -35,6 +35,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     pic,
+    favorites: [],
   });
 
   if (user) {
@@ -46,6 +47,7 @@ export const registerUser = asyncHandler(async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         pic: user.pic,
+        favorites: user.favorites,
       },
       token,
     });
@@ -72,6 +74,7 @@ export const authUser = asyncHandler(async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         pic: user.pic,
+        favorites: user.favorites,
       },
       token,
     });
@@ -88,23 +91,25 @@ export const addFavoriteEvent = asyncHandler(async (req, res) => {
   // Verificar se o evento já está nos favoritos do usuário
   const user = await User.findById(_id);
   if (user.favorites.includes(eventId)) {
-    res.status(400).json('Evento já está nos favoritos do usuário');
-    return;
+    return res.status(400).json('Evento já está nos favoritos do usuário');
   }
 
   try {
     // Verificar se o evento existe
     const event = await Event.findById(eventId);
     if (!event) {
-      res.status(404).json('Evento não encontrado');
-      return;
+      return res.status(404).json('Evento não encontrado');
     }
 
     // Adicionar o evento aos favoritos do usuário
     user.favorites.push(eventId);
-    await user.save();
-
-    res.status(200).json('Evento adicionado aos favoritos com sucesso');
+    const newUser = await user.save();
+    res
+      .status(200)
+      .json({
+        data: newUser,
+        message: 'Evento adicionado aos favoritos com sucesso!',
+      });
   } catch (error) {
     res.status(400).json('Erro ao adicionar evento aos favoritos');
   }
@@ -117,9 +122,12 @@ export const removeFavoriteEvent = asyncHandler(async (req, res) => {
   user.favoriteEvents = user.favoriteEvents.filter(
     (event) => event.toString() !== eventId
   );
-  await user.save();
+  const newUser = await user.save();
 
   res
     .status(200)
-    .json({ message: 'Evento removido dos favoritos com sucesso!' });
+    .json({
+      data: newUser,
+      message: 'Evento removido dos favoritos com sucesso!',
+    });
 });
