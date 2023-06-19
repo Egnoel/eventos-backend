@@ -102,32 +102,63 @@ export const addFavoriteEvent = asyncHandler(async (req, res) => {
     }
 
     // Adicionar o evento aos favoritos do usuário
-    user.favorites.push(eventId);
-    const newUser = await user.save();
-    res
-      .status(200)
-      .json({
-        data: newUser,
-        message: 'Evento adicionado aos favoritos com sucesso!',
-      });
+    const newUser = await User.findByIdAndUpdate(
+      _id,
+      { favorites: [...user.favorites, eventId] },
+
+      {
+        useFindAndModify: false,
+        new: true,
+      }
+    );
+    res.status(200).json({
+      data: newUser,
+      message: 'Evento adicionado aos favoritos com sucesso!',
+    });
   } catch (error) {
-    res.status(400).json('Erro ao adicionar evento aos favoritos');
+    res.status(400).json({
+      error: error.message,
+      message: 'Erro ao adicionar evento aos favoritos',
+    });
   }
 });
 
 export const removeFavoriteEvent = asyncHandler(async (req, res) => {
   const { eventId } = req.params;
-  const user = req.user;
+  const { _id } = req.user;
 
-  user.favoriteEvents = user.favoriteEvents.filter(
-    (event) => event.toString() !== eventId
-  );
-  const newUser = await user.save();
+  try {
+    const user = await User.findById(_id);
+    if (!user.favorites.includes(eventId)) {
+      return res.status(400).json('Evento não está nos favoritos do usuário');
+    }
 
-  res
-    .status(200)
-    .json({
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json('Evento não encontrado');
+    }
+
+    const newUser = await User.findByIdAndUpdate(
+      _id,
+      {
+        favorites: [
+          ...user.favorites.filter((event) => event.toString() !== eventId),
+        ],
+      },
+
+      {
+        useFindAndModify: false,
+        new: true,
+      }
+    );
+    res.status(200).json({
       data: newUser,
       message: 'Evento removido dos favoritos com sucesso!',
     });
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+      message: 'Erro ao remover evento dos favoritos',
+    });
+  }
 });
