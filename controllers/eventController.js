@@ -138,3 +138,20 @@ export const myFavorites = asyncHandler(async (req, res) => {
     });
   }
 });
+
+export const myRegistrations = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  try {
+    const events = await Event.find({ registrations: _id });
+    if (!events)
+      return res
+        .status(400)
+        .send("No events found where the user is registered.");
+    res.status(200).send(events);
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+      message: "Error fetching user's registered events",
+    });
+  }
+});
