@@ -12,11 +12,13 @@ import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import uploadImage from "./config/uploadImage.js";
+import mediaServer from "./media-server.js";
 
 config();
 connectDB();
 const app = express();
 const PORT = process.env.PORT || 8000;
+
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -30,6 +32,7 @@ app.use(function (req, res, next) {
   );
   next();
 });
+mediaServer.run();
 app.use(express.json({ limit: "30mb", extended: true }));
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
 app.use("/api/user", userRoutes);
@@ -49,11 +52,33 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: "http://localhost:3000" },
 });
-/* 
-io.on('connection', (socket) => {
-  console.log('Connected to socket.io' + socket.id);
+io.on("connection", (socket) => {
+  console.log(`Novo cliente conectado: ${socket.id}`);
+
+  // Lógica para lidar com eventos de socket, como envio e recebimento de mensagens
+
+  // Evento disparado quando um cliente se conecta a uma sala específica
+  socket.on("joinRoom", (roomId) => {
+    console.log(`Cliente ${socket.id} entrou na sala ${roomId}`);
+    socket.join(roomId);
+  });
+
+  // Evento disparado quando um cliente envia uma mensagem
+  socket.on("sendMessage", (roomId, message) => {
+    console.log(
+      `Cliente ${socket.id} enviou a mensagem "${message}" para a sala ${roomId}`
+    );
+    // Lógica para tratar o recebimento de mensagens e emitir para todos os clientes na sala
+    io.to(roomId).emit("messageReceived", message);
+  });
+
+  // Evento disparado quando um cliente se desconecta
+  socket.on("disconnect", () => {
+    console.log(`Cliente ${socket.id} desconectado`);
+    // Lógica para lidar com a desconexão do cliente
+  });
 });
-*/
+
 httpServer.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
 });

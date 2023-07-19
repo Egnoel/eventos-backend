@@ -155,3 +155,71 @@ export const myRegistrations = asyncHandler(async (req, res) => {
     });
   }
 });
+
+export const startLive = asyncHandler(async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    // Verifique se o evento com o ID fornecido existe e está configurado corretamente
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Evento não encontrado" });
+    }
+
+    // Verifique se a transmissão ao vivo já está em andamento
+    if (event.isTransmission) {
+      return res
+        .status(400)
+        .json({ message: "A transmissão ao vivo já está em andamento" });
+    }
+
+    // Defina a propriedade isTransmission do evento como true para iniciar a transmissão ao vivo
+    event.isTransmission = true;
+    await event.save();
+
+    res
+      .status(200)
+      .json({ message: "Transmissão ao vivo iniciada com sucesso" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Erro ao iniciar a transmissão ao vivo",
+        error: error.message,
+      });
+  }
+});
+
+export const stopLive = asyncHandler(async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    // Verifique se o evento com o ID fornecido existe e está configurado corretamente
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Evento não encontrado" });
+    }
+
+    // Verifique se a transmissão ao vivo já foi encerrada
+    if (!event.isTransmission) {
+      return res
+        .status(400)
+        .json({ message: "A transmissão ao vivo já foi encerrada" });
+    }
+
+    // Defina a propriedade isTransmission do evento como false para parar a transmissão ao vivo
+    event.isTransmission = false;
+    await event.save();
+
+    res
+      .status(200)
+      .json({ message: "Transmissão ao vivo encerrada com sucesso" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Erro ao encerrar a transmissão ao vivo",
+        error: error.message,
+      });
+  }
+});

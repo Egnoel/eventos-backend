@@ -10,6 +10,8 @@ import {
   myEvents,
   myFavorites,
   myRegistrations,
+  startLive,
+  stopLive,
 } from "../controllers/eventController.js";
 
 const router = Router();
@@ -20,6 +22,8 @@ router.route("/favourites").get(protect, myFavorites);
 router.route("/registrations").get(protect, myRegistrations);
 router.route("/:id").get(oneEvent);
 router.route("/create").post(protect, createEvent);
+router.route("/startLive/:eventId").post(protect, startLive);
+router.route("/stopLive/:eventId").post(protect, stopLive);
 router.route("/:id").put(protect, editEvent);
 router.route("/filter").get(filterEvents);
 router.route("/:id").delete(protect, deleteEvent);
