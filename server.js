@@ -71,6 +71,11 @@ io.on("connection", (socket) => {
     // Lógica para tratar o recebimento de mensagens e emitir para todos os clientes na sala
     io.to(roomId).emit("messageReceived", message);
   });
+  socket.on("stopTransmission", (roomId) => {
+    console.log(`Transmissão interrompida na sala ${roomId}`);
+    // Lógica para interromper a transmissão na sala
+    io.to(roomId).emit("transmissionStopped");
+  });
 
   // Evento disparado quando um cliente se desconecta
   socket.on("disconnect", () => {
