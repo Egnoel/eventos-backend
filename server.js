@@ -7,7 +7,8 @@ import eventRoutes from "./routes/eventRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import inscriptionRoutes from "./routes/inscriptionRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
-import path from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -18,6 +19,8 @@ config();
 connectDB();
 const app = express();
 const PORT = process.env.PORT || 8000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 app.use(
   cors({
@@ -35,10 +38,22 @@ app.use(function (req, res, next) {
 mediaServer.run();
 app.use(express.json({ limit: "30mb", extended: true }));
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
+app.use(express.static(join(__dirname, "public")));
 app.use("/api/user", userRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/subscribe", inscriptionRoutes);
+app.get("/live/:eventId/index.m3u8", (req, res) => {
+  const eventId = req.params.eventId;
+  const filePath = join(__dirname, "media", "live", eventId, "index.m3u8");
+
+  try {
+    res.status(200).json(filePath);
+  } catch (error) {
+    console.error("Error sending the file:", error.message);
+    res.status(500).send("Error sending the file");
+  }
+});
 app.post("/api/uploadImage", (req, res) => {
   uploadImage(req.body.image)
     .then((url) => res.send(url))
